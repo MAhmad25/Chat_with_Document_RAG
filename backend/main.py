@@ -135,6 +135,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PDF Chat API", lifespan=lifespan)
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=FRONTEND_ORIGINS,
@@ -160,6 +161,11 @@ class UploadResponse(BaseModel):
 class StatusResponse(BaseModel):
     document_loaded: bool
     filename: Optional[str] = None
+
+
+@app.get("/")
+def health():
+    return {"system": "healthy"}
 
 
 @app.get("/api/status", response_model=StatusResponse)
@@ -202,7 +208,8 @@ async def upload_pdf(file: UploadFile = File(...)):
         state.build_retriever()
         state.filename = file.filename
         state.save_meta()
-        return UploadResponse(filename=file.filename, chunks=len(chunks))# type: ignore
+        # type: ignore
+        return UploadResponse(filename=file.filename, chunks=len(chunks))
     except HTTPException:
         state.clear()
         raise
